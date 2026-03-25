@@ -1,0 +1,500 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Student Details Lookup</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0b0e17;
+      --surface: #111520;
+      --border: #1e2435;
+      --accent: #00e5ff;
+      --accent2: #7c3aed;
+      --text: #e8eaf6;
+      --muted: #5c6080;
+      --success: #00e676;
+      --error: #ff1744;
+      --label: #8892b0;
+      --mono: 'Space Mono', monospace;
+      --sans: 'Syne', sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      overflow-x: hidden;
+    }
+
+    /* Grid background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Glow blobs */
+    body::after {
+      content: '';
+      position: fixed;
+      width: 600px; height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(124,58,237,0.12) 0%, transparent 70%);
+      top: -200px; left: -200px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .glow-blob2 {
+      position: fixed;
+      width: 500px; height: 500px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0,229,255,0.08) 0%, transparent 70%);
+      bottom: -150px; right: -100px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 520px;
+      animation: fadeUp 0.6s ease both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .header {
+      margin-bottom: 2.5rem;
+    }
+
+    .tag {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--accent);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .tag::before {
+      content: '';
+      display: block;
+      width: 24px; height: 1px;
+      background: var(--accent);
+    }
+
+    h1 {
+      font-size: 2.4rem;
+      font-weight: 800;
+      line-height: 1.1;
+      color: var(--text);
+      letter-spacing: -0.02em;
+    }
+
+    h1 span {
+      color: var(--accent);
+    }
+
+    .subtitle {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 0.75rem;
+      line-height: 1.6;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent2), var(--accent));
+    }
+
+    .field {
+      margin-bottom: 1.5rem;
+      animation: fadeUp 0.6s ease both;
+    }
+
+    .field:nth-child(1) { animation-delay: 0.1s; }
+    .field:nth-child(2) { animation-delay: 0.2s; }
+    .field:nth-child(3) { animation-delay: 0.3s; }
+
+    label {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--label);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 0.6rem;
+    }
+
+    label .num {
+      color: var(--accent);
+      font-size: 0.65rem;
+    }
+
+    input {
+      width: 100%;
+      background: #0d1018;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.8rem 1rem;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 0.88rem;
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+      outline: none;
+      letter-spacing: 0.02em;
+    }
+
+    input::placeholder { color: var(--muted); }
+
+    input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(0,229,255,0.08);
+      background: #0f1420;
+    }
+
+    input:hover:not(:focus) {
+      border-color: #2a3050;
+    }
+
+    .btn {
+      width: 100%;
+      margin-top: 0.5rem;
+      padding: 0.9rem 1.5rem;
+      background: linear-gradient(135deg, var(--accent2), var(--accent));
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-family: var(--sans);
+      font-size: 0.9rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+      position: relative;
+      overflow: hidden;
+      animation: fadeUp 0.6s 0.4s ease both;
+    }
+
+    .btn::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0);
+      transition: background 0.2s;
+    }
+
+    .btn:hover {
+      opacity: 0.92;
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(0,229,255,0.2);
+    }
+
+    .btn:active { transform: translateY(0); }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn .spinner {
+      display: none;
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin: 0 auto;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .btn.loading .btn-text { display: none; }
+    .btn.loading .spinner  { display: block; }
+
+    /* URL preview */
+    .url-preview {
+      margin-top: 1.5rem;
+      padding: 0.75rem 1rem;
+      background: #080a10;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      color: var(--muted);
+      word-break: break-all;
+      line-height: 1.7;
+      transition: border-color 0.2s;
+      animation: fadeUp 0.6s 0.5s ease both;
+    }
+
+    .url-preview.active {
+      border-color: rgba(0,229,255,0.25);
+      color: var(--label);
+    }
+
+    .url-preview .url-label {
+      color: var(--accent);
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 0.3rem;
+    }
+
+    /* Result box */
+    .result {
+      margin-top: 1.5rem;
+      border-radius: 10px;
+      overflow: hidden;
+      animation: fadeUp 0.4s ease both;
+      display: none;
+    }
+
+    .result.show { display: block; }
+
+    .result-header {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.7rem 1rem;
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .result.success .result-header {
+      background: rgba(0,230,118,0.12);
+      color: var(--success);
+      border: 1px solid rgba(0,230,118,0.2);
+      border-bottom: none;
+      border-radius: 10px 10px 0 0;
+    }
+
+    .result.error .result-header {
+      background: rgba(255,23,68,0.12);
+      color: var(--error);
+      border: 1px solid rgba(255,23,68,0.2);
+      border-bottom: none;
+      border-radius: 10px 10px 0 0;
+    }
+
+    .result-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+    }
+
+    .result.success .result-dot { background: var(--success); box-shadow: 0 0 6px var(--success); }
+    .result.error   .result-dot { background: var(--error);   box-shadow: 0 0 6px var(--error); }
+
+    .result-body {
+      padding: 1rem;
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      line-height: 1.8;
+      border-radius: 0 0 10px 10px;
+      word-break: break-word;
+    }
+
+    .result.success .result-body {
+      background: rgba(0,230,118,0.05);
+      border: 1px solid rgba(0,230,118,0.2);
+      border-top: none;
+      color: #a7f3d0;
+    }
+
+    .result.error .result-body {
+      background: rgba(255,23,68,0.05);
+      border: 1px solid rgba(255,23,68,0.2);
+      border-top: none;
+      color: #fca5a5;
+    }
+
+    pre {
+      white-space: pre-wrap;
+      tab-size: 2;
+    }
+  </style>
+</head>
+<body>
+  <div class="glow-blob2"></div>
+
+  <div class="container">
+    <div class="header">
+      <div class="tag">Student Portal</div>
+      <h1>Student Attendence<br/><span>Form</span></h1>
+      <p class="subtitle">// Enter student info to Mark Attendence through API<br/>// GET /Student/details/{Name}/{USN}/{SubCode}</p>
+    </div>
+
+    <div class="card">
+      <div class="field">
+        <label><span class="num">01</span> Student Name</label>
+        <input type="text" id="name" placeholder="e.g. Rahul Sharma" autocomplete="off" />
+      </div>
+
+      <div class="field">
+        <label><span class="num">02</span> Student USN</label>
+        <input type="text" id="usn" placeholder="e.g. 1BM21CS001" autocomplete="off" />
+      </div>
+
+      <div class="field">
+        <label><span class="num">03</span> Subject Code</label>
+        <input type="text" id="subcode" placeholder="e.g. CS401" autocomplete="off" />
+      </div>
+
+      <button class="btn" id="submitBtn" onclick="handleSubmit()">
+        <span class="btn-text">Mark Attendence →</span>
+        <span class="spinner"></span>
+      </button>
+
+      <div class="url-preview" id="urlPreview">
+        <span class="url-label">Endpoint</span>
+        <span id="urlText">Fill in the fields to preview the request URL</span>
+      </div>
+
+      <div class="result" id="result">
+        <div class="result-header">
+          <div class="result-dot"></div>
+          <span id="resultLabel">Response</span>
+        </div>
+        <div class="result-body">
+          <pre id="resultBody"></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const nameInput   = document.getElementById('name');
+    const usnInput    = document.getElementById('usn');
+    const subcodeInput = document.getElementById('subcode');
+    const urlPreview  = document.getElementById('urlPreview');
+    const urlText     = document.getElementById('urlText');
+    const submitBtn   = document.getElementById('submitBtn');
+    const resultEl    = document.getElementById('result');
+    const resultLabel = document.getElementById('resultLabel');
+    const resultBody  = document.getElementById('resultBody');
+
+    const BASE = 'http://localhost:8080/Student/details';
+
+    function buildURL() {
+      const n = nameInput.value.trim();
+      const u = usnInput.value.trim();
+      const s = subcodeInput.value.trim();
+      if (!n && !u && !s) return null;
+      const parts = [
+        n ? encodeURIComponent(n) : '{Name}',
+        u ? encodeURIComponent(u) : '{USN}',
+        s ? encodeURIComponent(s) : '{SubCode}'
+      ];
+      return `${BASE}/${parts.join('/')}`;
+    }
+
+    function updatePreview() {
+      const url = buildURL();
+      if (!url) {
+        urlText.textContent = 'Fill in the fields to preview the request URL';
+        urlPreview.classList.remove('active');
+      } else {
+        urlText.textContent = url;
+        urlPreview.classList.add('active');
+      }
+    }
+
+    [nameInput, usnInput, subcodeInput].forEach(el => {
+      el.addEventListener('input', updatePreview);
+    });
+
+    async function handleSubmit() {
+      const n = nameInput.value.trim();
+      const u = usnInput.value.trim();
+      const s = subcodeInput.value.trim();
+
+      if (!n || !u || !s) {
+        showResult('error', 'Validation Error', 'All fields are required. Please fill in Name, USN, and Subject Code.');
+        return;
+      }
+
+      const url = `${BASE}/${encodeURIComponent(n)}/${encodeURIComponent(u)}/${encodeURIComponent(s)}`;
+
+      // Loading state
+      submitBtn.disabled = true;
+      submitBtn.classList.add('loading');
+      resultEl.classList.remove('show');
+
+      try {
+        const res = await fetch(url, { method: 'GET' });
+
+        const body = await res.text();
+
+        if (res.ok) {
+          showResult('success', `${res.status} OK`, body || '(empty response)');
+        } else {
+          showResult('error', `${res.status} ${res.statusText}`, body || '(no response body)');
+        }
+
+      } catch (err) {
+        showResult('error', 'Network Error', `Could not reach the server.\n\n${err.message}\n\nMake sure localhost:8080 is running.`);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('loading');
+      }
+    }
+
+    function showResult(type, label, body) {
+      resultEl.className = `result show ${type}`;
+      resultLabel.textContent = label;
+      resultBody.textContent  = body;
+      resultEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    // Allow Enter key to submit
+    [nameInput, usnInput, subcodeInput].forEach(el => {
+      el.addEventListener('keydown', e => {
+        if (e.key === 'Enter') handleSubmit();
+      });
+    });
+  </script>
+</body>
+</html>
